@@ -136,7 +136,7 @@ export class ttPlaylistDirectory extends PlaylistDirectory {
     if ( slider.value === currentPercentage ) return;
 
     if ( sound.sound ) {
-      //calculate new 'current' value
+      //calculate new 'current'  value
       const newCurrent = sound.sound.duration * (slider.value / 100);
       //force a pause with fake pausedTime
       sound.update({playing: false, pausedTime: newCurrent})
