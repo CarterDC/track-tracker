@@ -1,0 +1,61 @@
+<li class="sound flexrow {{sound.css}}" data-playlist-id="{{sound.playlistId}}" data-sound-id="{{sound._id}}">
+  <h4 class="sound-name">{{sound.name}}</h4>
+  {{#if playback}}
+  {{!-- Now Playing --}}
+    <div class="flexrow" style="flex:0 0 100px; margin: 0 0 0 5px;">
+      <input class="sound-volume" type="range" title="{{localize 'PLAYLIST.SoundVolume'}}"
+        value="{{sound.lvolume}}" min="0" max="1" step="0.05"/>
+      <i class="volume-icon fas fa-volume-mute"></i>
+    </div>
+    <div class="sound-playback flexrow" style="flex-wrap: nowrap; justify-content: space-between;">
+        <div class="sound-timer" style="display:none;">
+            <span class="current">{{sound.currentTime}}</span>
+            <span class="sep">/</span>
+            <span class="duration">{{sound.durationTime}}</span>
+        </div>
+        <input class="track-tracker" type="range" title="" style="margin: 0 5px 0 0;"
+            value="{{sound.trackPercentage}}" min="0" max="100" step="1"/>
+        {{#if sound.playing}}
+          <a class="sound-control pause {{sound.controlCSS}}" data-action="sound-pause" title="{{localize 'PLAYLIST.SoundPause'}}">
+            <i class="{{sound.pauseIcon}}"></i>
+          </a>
+        {{else}}
+          <a class="sound-control pause {{sound.controlCSS}}" style="display:none;" data-action="sound-pause" title="{{localize 'PLAYLIST.SoundPause'}}">
+            <i class="{{sound.pauseIcon}}"></i>
+          </a>
+          <a class="sound-control {{sound.controlCSS}}" data-action="sound-play" title="{{localize sound.playTitle}}">
+              <i class="{{sound.playIcon}}"></i>
+          </a>
+        {{/if}}
+        {{#if @root.user.isGM}}
+        <a class="sound-control {{#unless sound.repeat}}inactive{{/unless}} {{sound.controlCSS}}"
+          data-action="sound-repeat" title="{{localize 'PLAYLIST.SoundLoop'}}">
+            <i class="fas fa-sync"></i>
+        </a>
+        {{/if}}
+        <a class="sound-control {{sound.controlCSS}}" data-action="sound-stop" title="{{localize 'PLAYLIST.SoundStop'}}">
+            <i class="fas fa-times-circle"></i>
+        </a>
+    </div>
+  {{else}}
+  {{!-- inside the folders --}}
+    <div class="sound-controls flexrow">
+        {{#if @root.user.isGM}}
+        <a class="sound-control {{#unless sound.repeat}}inactive{{/unless}} {{sound.controlCSS}}"
+          data-action="sound-repeat" title="{{localize 'PLAYLIST.SoundLoop'}}">
+            <i class="fas fa-sync"></i>
+        </a>
+        {{/if}}
+
+        {{#if sound.playing}}
+        <a class="sound-control {{sound.controlCSS}}" data-action="sound-stop" title="{{localize 'PLAYLIST.SoundStop'}}">
+            <i class="{{sound.playIcon}}"></i>
+        </a>
+        {{else}}
+        <a class="sound-control {{sound.controlCSS}}" data-action="sound-play" title="{{localize sound.playTitle}}">
+            <i class="{{sound.playIcon}}"></i>
+        </a>
+        {{/if}}
+    </div>
+  {{/if}}
+</li>

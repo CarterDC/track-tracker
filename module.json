@@ -1,0 +1,24 @@
+{
+  "name": "track-tracker",
+  "title": "Track Tracker",
+  "description": "Adds a Tracker to the 'now playing' Track.",
+  "version": "0.0.1",
+  "minimumCoreVersion" : "0.8.6",
+  "compatibleCoreVersion" : "0.8.6",
+  "author": "Carter_DC",
+  "authors": [
+    {
+      "name": "Carter_DC",
+      "discord": "Carter_DC#1097"
+    }
+  ],
+  "esmodules": [
+    "/scripts/track-tracker.js"
+  ],
+  "styles": [],
+  "languages": [],
+  "url": "https://github.com/CarterDC/track-tracker",
+  "manifest": "https://raw.githubusercontent.com/CarterDC/track-tracker/main/module.json",
+  "download": "https://github.com/CarterDC/track-tracker/archive/refs/heads/main.zip",
+  "license": "LICENSE"
+}

@@ -1,0 +1,10 @@
+{
+  "TRACK-TRACKER": {
+    "hints":{
+      "pause": "Pause",
+      "play": "Jouer",
+      "mute": "Couper le son",
+      "unmute": "Rétablir le son"
+    }
+  }
+}
