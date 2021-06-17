@@ -8,13 +8,20 @@
       <i class="volume-icon fas fa-volume-mute"></i>
     </div>
     <div class="sound-playback flexrow" style="flex-wrap: nowrap; justify-content: space-between;">
-        <div class="sound-timer" style="display:none;">
-            <span class="current">{{sound.currentTime}}</span>
-            <span class="sep">/</span>
-            <span class="duration">{{sound.durationTime}}</span>
+        <div class = "tt tooltip">
+          <input class="track-tracker" type="range" value="{{sound.trackPercentage}}" min="0" max="100" step="1"/>
+          <span class="bottomtooltiptext">
+              <span class="current">{{sound.currentTime}}</span>
+              <span class="sep">/</span>
+              <span class="duration">{{sound.durationTime}}</span>
+          </span>
+          {{#if sound.markin}}
+            <span class="tt mark" style="left:{{sound.markin}}%; margin: 0 0 0 -2px;"><i class="fas fa-angle-right"></i></span>
+          {{/if}}
+          {{#if sound.markout}}
+            <span class="tt mark" style="left:{{sound.markout}}%; margin: 0 0 0 2px;"><i class="fas fa-angle-left"></i></span>
+          {{/if}}
         </div>
-        <input class="track-tracker"  type="range" title="" style="margin: 0 5px 0 0;"
-            value="{{sound.trackPercentage}}" min="0" max="100" step="1"/>
         {{#if sound.playing}}
           <a class="sound-control pause {{sound.controlCSS}}" data-action="sound-pause" title="{{localize 'PLAYLIST.SoundPause'}}">
             <i class="{{sound.pauseIcon}}"></i>

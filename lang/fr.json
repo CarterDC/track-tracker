@@ -18,7 +18,7 @@
       "newValue": "Entrez une nouvelle valeur pour <br><b>{name}</b><br>{min} < min - max < {max}"
     },
     "notifications":{
-      "invalidFormat": "{value}  n'a pas un format conforme !",
+      "invalidFormat": "{value} n'a pas un format conforme !",
       "outtaBounds": "{value} est en dehors de la plage de valeurs acceptables !" 
     }
   }

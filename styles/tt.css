@@ -1,0 +1,43 @@
+
+.tt.tooltip{
+  position: relative;
+  margin: 0 8px 0 0;
+}
+.tt.tooltip .bottomtooltiptext{
+  visibility: hidden;
+  background-color: rgba(0,0,0,0.5);
+  text-align: center;
+  font-size: 12px;
+  font-weight: normal;
+  border: 1px solid #7a7971;
+  border-radius: 3px;
+  padding: 2px 5px;
+  position: absolute;
+  top: 100%;
+  left: 45%;
+  margin: -3px 0 0 0;
+  z-index: 1;
+}
+.tt.tooltip .bottomtooltiptext::after{
+  content: " ";
+  position: absolute;
+  bottom: 100%;
+  left: 10%;
+  margin-top: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent #191813 transparent;
+}
+.tt.tooltip:hover .bottomtooltiptext{
+  visibility: visible;
+}
+.tt.mark{
+  position:absolute;
+  font-size: 16px;
+  text-shadow: -1px 1px 0 #000,
+              2px 2px 0 #000,
+              1px -1px 0 #000,
+              -1px -1px 0 #000;
+  top:2%;
+  color: #ff6400;
+}
