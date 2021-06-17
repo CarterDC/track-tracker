@@ -1,5 +1,7 @@
 import { ttPlaylistDirectory } from './tt-playlist-directory.js';
 
+//todo : do a font with necessary icons
+
 Hooks.once('init', () => {
   RegisterHandlebarsHelpers();
   loadTemplates(["modules/track-tracker/templates/soundPartial.hbs"]);
@@ -20,7 +22,7 @@ function RegisterHandlebarsHelpers(){
   //returns an integer percentage 
   Handlebars.registerHelper("trackPercentage", function(sound)
   {
-    let percentage = 0;
+    let percentage = 0; 
       console.log('TT | sound :', sound);
     return percentage;
   })
