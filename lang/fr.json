@@ -4,7 +4,22 @@
       "pause": "Pause",
       "play": "Jouer",
       "mute": "Couper le son",
-      "unmute": "Rétablir le son"
+      "unmute": "Rétablir le son",
+      "markInput": "secondes ou min:sec (ex : 90 ou 1:30) - '0' pour supprimer"
+    },
+    "context":{
+      "markin": "Marquer le début",
+      "markout": "Marquer la fin",
+      "remove": "Supprimer les marques"
+    },
+    "prompts":{
+      "markin": "marque de début",
+      "markout": "marque de fin",
+      "newValue": "Entrez une nouvelle valeur pour <br><b>{name}</b><br>{min} < min - max < {max}"
+    },
+    "notifications":{
+      "invalidFormat": "{value} n'a pas un format conforme !",
+      "outtaBounds": "{value} est en dehors de la plage de valeurs acceptables !" 
     }
   }
 }

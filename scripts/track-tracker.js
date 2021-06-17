@@ -1,5 +1,7 @@
 import { ttPlaylistDirectory } from './tt-playlist-directory.js';
 
+//todo : do a font with necessary icons
+
 Hooks.once('init', () => {
   RegisterHandlebarsHelpers();
   loadTemplates(["modules/track-tracker/templates/soundPartial.hbs"]);
@@ -29,17 +31,4 @@ function RegisterHandlebarsHelpers(){
 async function ttDoSomething() {
   console.log('%cTrack Tracker %c| Doing Some Shit...', 'color: #22eeee', 'color: #fff');
   
-  /*
-  let path = "modules/track-tracker/templates/soundPartial.hbs";
-
-  await new Promise((resolve, reject) => {
-    game.socket.emit('template', path, resp => {
-      if ( resp.error ) return reject(new Error(resp.error));
-      const compiled = Handlebars.compile(resp.html);
-      Handlebars.registerPartial("soundPartial", compiled);
-      _templateCache[path] = compiled;
-      console.log(`Foundry VTT | Retrieved and compiled template ${path}`);
-      resolve(compiled);
-    });
-  });*/
 };

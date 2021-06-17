@@ -111,10 +111,53 @@ export class ttPlaylistDirectory extends PlaylistDirectory {
 
   /** @override */
   activateListeners(html) {
-    // Tracker slider
-    html.find('.track-tracker').change(this._onTrackTracker.bind(this));
     super.activateListeners(html);
+    // Tracker slider
+    if(game.user.isGM){
+      html.find('.track-tracker').change(this._onTrackTracker.bind(this));
+      const entryOptions = this._getTTContextOptions();
+      new ContextMenu(html, '#currently-playing .sound', entryOptions);
+    }
   }
+
+  /* -------------------------------------------- */
+   _getTTContextOptions(){
+      return [
+        {
+          name: "TRACK-TRACKER.context.markin",
+          icon: '<i class="fas fa-bookmark"></i>',
+          callback: li => {
+            const playlist = game.playlists.get(li[0].dataset.playlistId);
+            const sound = playlist.sounds.get(li[0].dataset.soundId);
+            this.editMark(sound, "markin")
+          }
+        },
+        {
+          name: "TRACK-TRACKER.context.markout",
+          icon: '<i class="fas fa-bookmark"></i>',
+          callback: li => {
+            const playlist = game.playlists.get(li[0].dataset.playlistId);
+            const sound = playlist.sounds.get(li[0].dataset.soundId);
+            this.editMark(sound, "markout")
+          }
+        },
+        {
+          name: "TRACK-TRACKER.context.remove",
+          icon: '<i class="fas fa-trash"></i>',
+          condition: li => {
+            const playlist = game.playlists.get(li[0].dataset.playlistId);
+            const sound = playlist.sounds.get(li[0].dataset.soundId);
+            return sound.getFlag("track-tracker", "markin") || sound.getFlag("track-tracker", "markout");
+          },
+          callback: li => {
+            const playlist = game.playlists.get(li[0].dataset.playlistId);
+            const sound = playlist.sounds.get(li[0].dataset.soundId);
+            sound.unsetFlag("track-tracker", "markin");
+            sound.unsetFlag("track-tracker", "markout");
+          }
+        }
+      ];
+   }
 
   /* -------------------------------------------- */
 
@@ -130,19 +173,84 @@ export class ttPlaylistDirectory extends PlaylistDirectory {
     const playlist = game.playlists.get(li.dataset.playlistId);
     const sound = playlist.sounds.get(li.dataset.soundId);
 
-    // 
+    //don't go further if slider is already positionned on the current percentage
     const ct = sound.playing ? sound.sound.currentTime : sound.data.pausedTime;
     const currentPercentage = parseInt(ct / sound.sound.duration * 100);
     if ( slider.value === currentPercentage ) return;
 
     if ( sound.sound ) {
-      //calculate new 'current'  value
+      //calculate new 'current' value
       const newCurrent = sound.sound.duration * (slider.value / 100);
-      //force a pause with fake pausedTime
+      //force a pause with fake pausedTime => then restart
       sound.update({playing: false, pausedTime: newCurrent})
       .then(r =>{
         playlist.playSound(sound);
-      })
+      });
     }
+  }
+
+  async editMark(sound, mark){
+    if(!sound) return;
+
+    //get previous mark values if exists
+    const min = (mark === "markin") ? 0 : (sound.getFlag("track-tracker", "markin") || 0);
+    const max = (mark === "markin") ? (sound.getFlag("track-tracker", "markout") || sound.sound.duration) : sound.sound.duration;
+    const current = sound.getFlag("track-tracker", mark) || 0;
+
+    //console.log(`TT | duration :`, sound.sound.duration);
+    //prompt for new value
+    const prompt = game.i18n.format("TRACK-TRACKER.prompts.newValue",
+      {
+        name: game.i18n.localize(`TRACK-TRACKER.prompts.${mark}`),
+        min: this._formatTimestamp(min),
+        max: this._formatTimestamp(max)
+      });
+    let newValue = await Dialog.prompt({
+      title: sound.name,
+      content: `<p style="text-align:center;">${prompt}</p>`
+       + `<input type="text"
+        value="${this._formatTimestamp(current)}"
+        title="${game.i18n.localize(`TRACK-TRACKER.hints.markInput`)}">
+        <br><br>`,
+      callback: (html) => html.find('input').val(),
+      rejectClose: false 
+    })
+    if(!newValue) return;
+    //try and update flag with new value
+    const markValue = this._getMarkValue({
+      new :newValue,
+      min: min,
+      max: max,
+      current : current
+    });
+    if(markValue === undefined) return;
+    sound.setFlag("track-tracker", mark, markValue);
+  }
+
+  _getMarkValue(markData){
+    const parsed = isNaN(markData.new) ? this._unFormatTimestamp(markData.new) : parseInt(markData.new);
+
+    if(parsed === undefined){
+      ui.notifications.error(game.i18n.format("TRACK-TRACKER.notifications.invalidFormat", {value: markData.new}));
+      return;
+    } 
+    //do lots of checks & shit
+    if(parsed === markData.current) return;
+    if(parsed <= markData.min || parsed >= markData.max){
+      ui.notifications.error(game.i18n.format("TRACK-TRACKER.notifications.outtaBounds", {value: markData.new}));
+      return;
+    } 
+    return parsed;
+  }
+
+  _unFormatTimestamp(timestamp){
+    const parts = timestamp.split(':');
+    if(parts.length != 2) return;
+
+    const minutes = parseInt(parts[0]);
+    const seconds = parseInt(parts[1]);
+    if(isNaN(minutes) || isNaN(seconds)) return;
+
+    return minutes * 60 + seconds;
   }
 }
