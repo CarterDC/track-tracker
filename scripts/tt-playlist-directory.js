@@ -61,6 +61,11 @@ export class ttPlaylistDirectory extends PlaylistDirectory {
         //TT module specific - calculate percentage
         s.trackPercentage = parseInt(
           (sound.playing ? sound.sound.currentTime : s.pausedTime) / sound.sound.duration * 100);
+        //TT module specific - add flag values
+        s.markin = parseInt(sound.getFlag("track-tracker", "markin") / sound.sound.duration * 100);
+        s.markout = parseInt(sound.getFlag("track-tracker", "markout") / sound.sound.duration * 100);
+        //todo : add flag for duration
+
         this._playingSounds.push(sound);
         this._playingSoundsData.push(s);
       }
@@ -240,7 +245,7 @@ export class ttPlaylistDirectory extends PlaylistDirectory {
       ui.notifications.error(game.i18n.format("TRACK-TRACKER.notifications.outtaBounds", {value: markData.new}));
       return;
     } 
-    return parsed; 
+    return parsed;
   }
 
   _unFormatTimestamp(timestamp){

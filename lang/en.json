@@ -1,0 +1,25 @@
+{
+  "TRACK-TRACKER": {
+    "hints":{
+      "pause": "Pause",
+      "play": "Play",
+      "mute": "Mute",
+      "unmute": "Unmute",
+      "markInput": "seconds or min:sec (eg : 90 ou 1:30) - '0' to remove"
+    },
+    "context":{
+      "markin": "mark in",
+      "markout": "mark out",
+      "remove": "Remove marks"
+    },
+    "prompts":{
+      "markin": "mark in",
+      "markout": "mark out",
+      "newValue": "Enter a new value for <br><b>{name}</b><br>{min} < min - max < {max}"
+    },
+    "notifications":{
+      "invalidFormat": "{value} format invalid!",
+      "outtaBounds": "{value} is out of bounds!" 
+    }
+  }
+}

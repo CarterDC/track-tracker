@@ -2,7 +2,7 @@
   "name": "track-tracker",
   "title": "Track Tracker",
   "description": "Adds a Tracker to the 'now playing' Track.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "minimumCoreVersion" : "0.8.6",
   "compatibleCoreVersion" : "0.8.7",
   "author": "Carter_DC",
@@ -15,13 +15,17 @@
   "esmodules": [
     "/scripts/track-tracker.js"
   ],
-  "styles": [],
+  "styles": ["styles/tt.css"],
   "languages": [
     {
       "lang": "fr",
       "name": "Français",
       "path": "lang/fr.json"
-      
+    },
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
     }
   ],
   "url": "https://github.com/CarterDC/track-tracker",
