@@ -240,7 +240,7 @@ export class ttPlaylistDirectory extends PlaylistDirectory {
       ui.notifications.error(game.i18n.format("TRACK-TRACKER.notifications.outtaBounds", {value: markData.new}));
       return;
     } 
-    return parsed;
+    return parsed; 
   }
 
   _unFormatTimestamp(timestamp){

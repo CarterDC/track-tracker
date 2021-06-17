@@ -22,7 +22,7 @@ function RegisterHandlebarsHelpers(){
   //returns an integer percentage 
   Handlebars.registerHelper("trackPercentage", function(sound)
   {
-    let percentage = 0;
+    let percentage = 0; 
       console.log('TT | sound :', sound);
     return percentage;
   })
