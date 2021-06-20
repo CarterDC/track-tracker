@@ -2,7 +2,7 @@
   "name": "track-tracker",
   "title": "Track Tracker",
   "description": "Adds a Tracker to the 'now playing' Track.",
-  "version": "0.1.2",
+  "version": "0.4.3",
   "minimumCoreVersion" : "0.8.6",
   "compatibleCoreVersion" : "0.8.7",
   "author": "Carter_DC",
