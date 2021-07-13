@@ -1,5 +1,5 @@
 /**
- * Slight override of the sidebar directory which organizes and displays world-level Playlist documents.
+ * 
  * @extends {PlaylistDirectory}
  */
 export class ttPlaylistDirectory extends PlaylistDirectory {
@@ -10,7 +10,7 @@ export class ttPlaylistDirectory extends PlaylistDirectory {
     /* -------------------------------------------- */
 
   /** @override
-   * changes vanilla template for module's
+   * changes vanilla template for TT module's
    * template is barely modified to use an external 'soundPartial' in lieu of the original inline one 
    */
   static get defaultOptions() {
@@ -79,94 +79,65 @@ export class ttPlaylistDirectory extends PlaylistDirectory {
     return p;
   }
 
+  /**
+   * Update the displayed timestamps for all currently playing audio sources.
+   * Runs on an interval every 1000ms.
+   * @private
+   * @override    Add tracker(s) update, (sound duration based on flag)
+   */
+   _updateTimestamps() {
+    if ( !this._playingSounds.length ) return;
+    const playing = this.element.find("#currently-playing")[0];
+    if ( !playing ) return;
+    for ( let sound of this._playingSounds ) {
+      const li = playing.querySelector(`.sound[data-sound-id="${sound.id}"]`);
+      if ( !li ) continue;
+
+      // Update current and max playback time
+      const current = li.querySelector("span.current");
+      const ct = sound.playing ? sound.sound.currentTime : sound.data.pausedTime;
+      // TT module specific duration from flag if exists
+      const duration = sound.sound.duration || sound.getFlag("track-tracker", "duration");
+      if ( current ) current.textContent = this._formatTimestamp(ct);
+      const max = li.querySelector("span.duration");
+      if ( max ) max.textContent = this._formatTimestamp(duration);
+      // TT module specific
+      //update tracker position
+      const tracker = li.querySelector("input.track-tracker");
+      if ( tracker ) tracker.value = parseInt(ct / duration * 100);
+
+      // Remove the loading spinner
+      const play = li.querySelector("a.pause i.fas");
+      if ( play.classList.contains("fa-spinner") ) {
+        play.classList.remove("fa-spin");
+        play.classList.replace("fa-spinner", "fa-pause");
+      }
+    }
+  }
+
   /* -------------------------------------------- */
-  /*  Event Listeners and Handlers                */
+  /*  TT specific Listeners and Handlers          */
   /* -------------------------------------------- */
 
   /** @override */
   activateListeners(html) {
-    super.activateListeners(html);
-    
+    //theses options are for GM / Assistant only
     if(game.user.isGM){
       // Tracker slider
       html.find('.track-tracker').change(this._onTrackerClick.bind(this));
+      //a mute button because, why not
       html.find('.tt.mute-toggle').click(this._onMuteToggleClick.bind(this));
 
       const entryOptions = this._getTTContextOptions();
       new ContextMenu(html, '#currently-playing .sound', entryOptions);
     }
-  }
 
-  /**
-   * Handle user interaction with a progression tracker
-   * updates sound for everyone
-   * @param {Event} event   The initial change event
-   * @private
-   */
-  async _onTrackerClick(event) {
-
-    event.preventDefault();
-    const slider = event.currentTarget;
-    const li = slider.closest(".sound");
-    const playlist = game.playlists.get(li.dataset.playlistId);
-    const sound = playlist.sounds.get(li.dataset.soundId);
-
-    const ct = sound.playing ? sound.sound.currentTime : sound.data.pausedTime;
-    const duration = sound.getFlag("track-tracker", "duration") || sound.sound.duration;
-    if(!duration){
-      ui.notifications.error('Sound has no valid duration atm');
-      return;
-    }
-    const currentPercentage = parseInt(ct / sound.sound.duration * 100);
-    if ( slider.value === currentPercentage ) return;
-
-    if ( sound.sound ) {
-      //calculate new 'current' value
-      const newCurrent = sound.sound.duration * (slider.value / 100);
-      if(sound.playing){
-        //force a pause with fake pausedTime => then restart
-        sound.update({playing: false, pausedTime: newCurrent})
-        .then(r =>{
-          return playlist.playSound(sound);
-        });
-      } else {
-        //sound in pause, just update the fake pauseTime
-        console.log(`TT | _onTrackerClick`);
-        return await sound.update({playing: false, pausedTime: newCurrent});
-      }
-    }
-  }
-
-  /**
-   * Handle user interaction with a mute toggle 'button'
-   * @param {Event} event   The initial change event
-   * @private
-   */
-  _onMuteToggleClick(event){
-    const li = event.currentTarget.closest(".sound");
-    const playlist = game.playlists.get(li.dataset.playlistId);
-    const sound = playlist.sounds.get(li.dataset.soundId);
-    let volume = 0;
-
-    if(sound.data.volume == 0){
-      volume = sound.getFlag("track-tracker", "volume") || 0.5; //TODO : hard value could be made an option
-    } else {
-      //remember current volume
-      sound.setFlag("track-tracker", "volume", sound.data.volume);
-    }
-
-    // From Foundry's volume management :
-    // Immediately apply a local adjustment
-    const localVolume = volume * game.settings.get("core", "globalPlaylistVolume");
-    sound.sound.fade(localVolume, {duration: PlaylistSound.VOLUME_DEBOUNCE_MS});
-    // Debounce a change to the database
-    if ( sound.isOwner ) sound.debounceVolume(volume);
+    super.activateListeners(html);
   }
 
   /**
    * Get the set of ContextMenu options which should be used for currently playing PlaylistSound
    * @return {object[]}   The Array of context options passed to the ContextMenu instance
-   * @protected
    */
   _getTTContextOptions(){
     return [
@@ -199,6 +170,7 @@ export class ttPlaylistDirectory extends PlaylistDirectory {
         callback: li => {
           const playlist = game.playlists.get(li[0].dataset.playlistId);
           const sound = playlist.sounds.get(li[0].dataset.soundId);
+          //only remove markin & out, don't remove duration flag
           sound.unsetFlag("track-tracker", "markin");
           sound.unsetFlag("track-tracker", "markout");
         }
@@ -207,11 +179,75 @@ export class ttPlaylistDirectory extends PlaylistDirectory {
   }
 
   /**
+   * Handle user interaction with a progression tracker
+   * updates sound for everyone
+   * @param {Event} event   The initial change event
+   */
+  async _onTrackerClick(event) {
+    event.preventDefault();
+    const slider = event.currentTarget;
+    const li = slider.closest(".sound");
+    const playlist = game.playlists.get(li.dataset.playlistId);
+    const sound = playlist.sounds.get(li.dataset.soundId);
+
+    const ct = sound.playing ? sound.sound.currentTime : sound.data.pausedTime;
+    const duration = sound.getFlag("track-tracker", "duration") || sound.sound.duration;
+    //todo : fix it !
+    if ( !duration ) {
+      ui.notifications.error(game.i18n.localize(`TRACK-TRACKER.notifications.soundNotLoaded`));
+      return;
+    }
+    const currentPercentage = parseInt(ct / sound.sound.duration * 100);
+    if ( slider.value === currentPercentage ) return;
+
+    if ( sound.sound ) {
+      //calculate new 'current' value
+      const newCurrent = sound.sound.duration * (slider.value / 100);
+      if(sound.playing){
+        //force a pause with a fake pausedTime => then restart
+        sound.update({playing: false, pausedTime: newCurrent})
+        .then(r =>{
+          return playlist.playSound(sound);
+        });
+      } else {
+        //sound in pause, just update the fake pauseTime
+        return await sound.update({playing: false, pausedTime: newCurrent});
+      }
+    }
+  }
+
+  /**
+   * Handle user interaction with a mute toggle 'button'
+   * @param {Event} event   The initial change event
+   */
+  _onMuteToggleClick(event){
+    event.preventDefault();
+
+    const li = event.currentTarget.closest(".sound");
+    const playlist = game.playlists.get(li.dataset.playlistId);
+    const sound = playlist.sounds.get(li.dataset.soundId);
+    let volume = 0;
+
+    if(sound.data.volume == 0){
+      volume = sound.getFlag("track-tracker", "volume") || 0.5; //TODO : hard value could be made an option
+    } else {
+      //remember current volume
+      sound.setFlag("track-tracker", "volume", sound.data.volume);
+    }
+
+    // From Foundry's volume management :
+    // Immediately apply a local adjustment
+    const localVolume = volume * game.settings.get("core", "globalPlaylistVolume");
+    sound.sound.fade(localVolume, {duration: PlaylistSound.VOLUME_DEBOUNCE_MS});
+    // Debounce a change to the database
+    if ( sound.isOwner ) sound.debounceVolume(volume);
+  }
+
+  /**
    * In response to a context menu action
    * Prompts user for a new mark value and sets a TRACK-TRACKER flag appropriately
    * @param {PlaylistSound} sound     The sound the player wants to put a mark on
    * @param {String} mark             Either 'markin' or 'markout' depending on context menu option
-   * @private
    */
    async _editMark(sound, mark){
     if(!sound) return;
@@ -223,24 +259,26 @@ export class ttPlaylistDirectory extends PlaylistDirectory {
     const current = sound.getFlag("track-tracker", mark); // could be unefined
 
     //prompt for new value
-    const prompt = game.i18n.format("TRACK-TRACKER.prompts.newValue",
+    const promptString = game.i18n.format("TRACK-TRACKER.prompts.newValue",
       {
         name: game.i18n.localize(`TRACK-TRACKER.prompts.${mark}`),
         min: this._formatTimestamp(min),
         max: this._formatTimestamp(max)
-      });
-    let newValue = await Dialog.prompt({
+    });
+    const content = `${promptString}
+      <input type="text"
+      value="${this._formatTimestamp(current)}"
+      title="${game.i18n.localize('TRACK-TRACKER.hints.markInput')}"
+      placeholder="0:0">
+      <br><br>`;
+
+    const newValue = await Dialog.prompt({
       title: sound.name,
-      content: `<p style="text-align:center;">${prompt}</p>`
-       + `<input type="text"
-        value="${this._formatTimestamp(current)}"
-        title="${game.i18n.localize('TRACK-TRACKER.hints.markInput')}"
-        placeholder="0:0">
-        <br><br>`,
+      content: content,
       callback: (html) => html.find('input').val(),
       rejectClose: false 
     })
-    if(newValue === null) return;
+    if ( newValue === null ) { return; }
 
     //try and update flag with new value
     const markValue = this._getValidMarkValue(
@@ -250,7 +288,7 @@ export class ttPlaylistDirectory extends PlaylistDirectory {
         max: max,
         current : current
       });
-    if(markValue === undefined) return;
+    if (markValue === undefined ) { return; }
     sound.setFlag("track-tracker", mark, markValue);
   }
 
@@ -259,19 +297,18 @@ export class ttPlaylistDirectory extends PlaylistDirectory {
    * displays warnigns and returns undefined otherwise
    * @param {Object} markData     User imput, min, max and current mark values
    * @returns {Number}            a valid mark value in seconds - undefined otherwise
-   * @private
    */
    _getValidMarkValue(markData){
     //user input could be a number or a formated timestamp m:s
     const parsed = isNaN(markData.new) ? this._unFormatTimestamp(markData.new) : parseInt(markData.new);
 
-    if(parsed === undefined){
+    if ( parsed === undefined ) {
       ui.notifications.error(game.i18n.format("TRACK-TRACKER.notifications.invalidFormat", {value: markData.new}));
       return;
     } 
     //checks against ranges
-    if(parsed === markData.current) return;
-    if(parsed <= markData.min || parsed >= markData.max){
+    if ( parsed === markData.current ) { return; }
+    if ( parsed <= markData.min || parsed >= markData.max ) {
       ui.notifications.error(game.i18n.format("TRACK-TRACKER.notifications.outtaBounds", {value: markData.new}));
       return;
     }
@@ -283,16 +320,15 @@ export class ttPlaylistDirectory extends PlaylistDirectory {
    * returns undefined if format is not parsable
    * @param {String} timestamp   A string that should be formated like 'm:s'
    * @returns {Number}           The corresponding number of seconds - undefined otherwise
-   * @private
    */
   _unFormatTimestamp(timestamp){
     const parts = timestamp.split(':');
-    if(parts.length != 2) return;
+    if  (parts.length != 2 ) { return; }
 
     const minutes = parseInt(parts[0]);
     const seconds = parseInt(parts[1]);
-    if(isNaN(minutes) || isNaN(seconds)) return;
-    if(seconds >= 60) return; //could be a typo ?
+    if ( isNaN(minutes) || isNaN(seconds) ) { return; }
+    if ( seconds >= 60 ) { return; }
 
     return minutes * 60 + seconds;
   }
@@ -300,110 +336,12 @@ export class ttPlaylistDirectory extends PlaylistDirectory {
   /**
    * Adds a flag on a PlaylistSound instance in order to have a reference when sound.sound.duration is not valid
    * @param {PlaylistSound} sound     The sound to put the flag onto
-   * @private
    */
   async _addDurationFlag(sound){
-    if(sound.getFlag("track-tracker", "duration")) return; //might be a mistake not to update ?
-    if(sound.sound.duration){
+    if ( sound.getFlag("track-tracker", "duration") ) { return; }
+    if ( sound.sound.duration ) {
       sound.setFlag("track-tracker", "duration", sound.sound.duration);
     }
   }
-
-  /* -------------------------------------------- */
-
-  /**
-   * Update the displayed timestamps for all currently playing audio sources.
-   * Runs on an interval every 1000ms.
-   * @private
-   * @override    Add tracker(s) update, sound duration based on flag, markout tracking
-   */
-   _updateTimestamps() {
-    if ( !this._playingSounds.length ) return;
-    const playing = this.element.find("#currently-playing")[0];
-    if ( !playing ) return;
-    for ( let sound of this._playingSounds ) {
-      const li = playing.querySelector(`.sound[data-sound-id="${sound.id}"]`);
-      if ( !li ) continue;
-
-      // Update current and max playback time
-      const current = li.querySelector("span.current");
-      const ct = sound.playing ? sound.sound.currentTime : sound.data.pausedTime;
-      // TT module specific duration from flag if exists
-      const duration = sound.sound.duration || sound.getFlag("track-tracker", "duration");
-      if ( current ) current.textContent = this._formatTimestamp(ct);
-      const max = li.querySelector("span.duration");
-      if ( max ) max.textContent = this._formatTimestamp(duration);
-      // TT module specific
-      //update tracker position
-      const tracker = li.querySelector("input.track-tracker");
-      if (tracker) tracker.value = parseInt(ct / duration * 100);
-
-      // Remove the loading spinner
-      const play = li.querySelector("a.pause i.fas");
-      if ( play.classList.contains("fa-spinner") ) {
-        play.classList.remove("fa-spin");
-        play.classList.replace("fa-spinner", "fa-pause");
-      }
-    }
-  }
-
-  /**
-   * Sound reached the markout - loop if needed or let the playlist decide
-   * @param {PlaylistSound} sound   The sound being played
-   */
-   async _ttMarkoutStop(sound){
-    if(sound.data.repeat){
-      const playlist = sound.parent;
-      const markin = sound.getFlag("track-tracker", "markin");
-      if(markin){
-        //sound has a markin, loop to that point
-        sound.update({playing: false, pausedTime: markin})
-        .then(r =>{
-          return playlist.playSound(sound);
-        });
-      } else {
-        //loop to the beginning (should be a better way though)
-        sound.update({playing: false, pausedTime: 0.01})
-        .then(r =>{
-          return playlist.playSound(sound);
-        });
-      }
-    } else {
-      //no repeat, signify it's over and let the playlist do it's job.
-      sound._onEnd();
-    }
-  }
-
-  _onSoundPlay(event, action){
-    const li = event.currentTarget.closest(".sound");
-    const playlist = game.playlists.get(li.dataset.playlistId);
-    const sound = playlist.sounds.get(li.dataset.soundId);
-    this._addDurationFlag(sound);
-    switch ( action ) {
-      case "sound-play":
-        //TT module specific : autoplay from the mark
-        const isPaused = !sound.playing && sound.data.pausedTime;
-        const markin = sound.getFlag("track-tracker", "markin");
-        if(!isPaused && markin){
-          return this._updateAndPlay(playlist, sound, markin);
-        }
-        return playlist.playSound(sound);
-      case "sound-pause":
-        return sound.update({playing: false, pausedTime: sound.sound.currentTime});
-      case "sound-stop":
-        return playlist.stopSound(sound);
-    }
-  }
-
-  /**
-   * redo that with options
-   */
-  async _updateAndPlay(playlist, sound, markin){
-    sound.update({pausedTime: markin})
-    .then(r =>{
-      playlist.playSound(sound);
-    });
-  }
-
 
 }
