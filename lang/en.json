@@ -5,7 +5,7 @@
       "play": "Play",
       "mute": "Mute",
       "unmute": "Unmute",
-      "markInput": "seconds or min:sec (eg : 90 ou 1:30) - '0' to remove"
+      "markInput": "seconds or min:sec (eg : 90 ou 1:30)"
     },
     "context":{
       "markin": "mark in",
