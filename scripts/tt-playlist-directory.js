@@ -189,12 +189,15 @@ export class ttPlaylistDirectory extends PlaylistDirectory {
     const li = slider.closest(".sound");
     const playlist = game.playlists.get(li.dataset.playlistId);
     const sound = playlist.sounds.get(li.dataset.soundId);
+    if ( !sound.sound.loaded ) {
+      ui.notifications.error(game.i18n.localize(`TRACK-TRACKER.notifications.soundNotLoaded`));
+      return sound.sound.load();
+    }
 
     const ct = sound.playing ? sound.sound.currentTime : sound.data.pausedTime;
     const duration = sound.getFlag("track-tracker", "duration") || sound.sound.duration;
     //todo : fix it !
     if ( !duration ) {
-      ui.notifications.error(game.i18n.localize(`TRACK-TRACKER.notifications.soundNotLoaded`));
       return;
     }
     const currentPercentage = parseInt(ct / sound.sound.duration * 100);
@@ -226,8 +229,12 @@ export class ttPlaylistDirectory extends PlaylistDirectory {
     const li = event.currentTarget.closest(".sound");
     const playlist = game.playlists.get(li.dataset.playlistId);
     const sound = playlist.sounds.get(li.dataset.soundId);
-    let volume = 0;
+    if ( !sound.sound.loaded ) {
+      ui.notifications.error(game.i18n.localize(`TRACK-TRACKER.notifications.soundNotLoaded`));
+      return sound.sound.load();
+    }
 
+    let volume = 0;
     if(sound.data.volume == 0){
       volume = sound.getFlag("track-tracker", "volume") || 0.5; //TODO : hard value could be made an option
     } else {
@@ -252,6 +259,10 @@ export class ttPlaylistDirectory extends PlaylistDirectory {
    async _editMark(sound, mark){
     if(!sound) return;
 
+    if ( !sound.sound.loaded ) {
+        ui.notifications.error(game.i18n.localize(`TRACK-TRACKER.notifications.soundNotLoaded`));
+        return sound.sound.load();
+    }
     //get previous mark values if exists
     const duration = sound.getFlag("track-tracker", "duration") || sound.sound.duration;
     const min = (mark === "markin") ? 0 : (sound.getFlag("track-tracker", "markin") || 0);
