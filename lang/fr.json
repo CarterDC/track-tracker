@@ -15,9 +15,10 @@
     "prompts":{
       "markin": "marque de début",
       "markout": "marque de fin",
-      "newValue": "Entrez une nouvelle valeur pour <br><b>{name}</b><br>{min} < min - max < {max}"
+      "newValue": "<p style='text-align:center;'>Entrez une nouvelle valeur pour <br><b>{name}</b><br>{min} < min - max < {max}</p>"
     },
     "notifications":{
+      "soundNotLoaded": "Ce titre n'est pas encore chargé !",
       "invalidFormat": "{value} n'a pas un format conforme !",
       "outtaBounds": "{value} est en dehors de la plage de valeurs acceptables !" 
     }
