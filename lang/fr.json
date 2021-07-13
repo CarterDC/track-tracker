@@ -5,7 +5,7 @@
       "play": "Jouer",
       "mute": "Couper le son",
       "unmute": "Rétablir le son",
-      "markInput": "secondes ou min:sec (ex : 90 ou 1:30) - '0' pour supprimer"
+      "markInput": "secondes ou min:sec (ex : 90 ou 1:30)"
     },
     "context":{
       "markin": "Marquer le début",
