@@ -1,3 +1,4 @@
+
 {{#*inline "folderPartial"}}
 <li class="directory-item folder flexcol {{#unless folder.expanded}}collapsed{{/unless}}"
     data-folder-id="{{folder.id}}" data-folder-depth="{{folder.depth}}">
@@ -60,8 +61,8 @@
 {{/inline}}
 
 {{#*inline "playlistPartial"}}
-<li class="directory-item entity playlist flexrow {{playlist.css}}" data-entity-id="{{playlist._id}}">
-    <header class="playlist-header flexrow" data-entity-id="{{playlist._id}}">
+<li class="directory-item entity playlist flexrow {{playlist.css}}" data-document-id="{{playlist._id}}">
+    <header class="playlist-header flexrow" data-document-id="{{playlist._id}}">
         <h4 class="playlist-name">{{playlist.name}} <i class="collapse fa fa-angle-{{#if playlist.expanded}}down{{else}}up{{/if}}"></i></h4>
         <div class="sound-controls playlist-controls flexrow">
             {{#unless playlist.playing}}
@@ -93,26 +94,44 @@
         </div>
     </header>
     <ol class="playlist-sounds">
-    {{#each playlist.sounds as |sound|}}
-        {{> "modules/track-tracker/templates/soundPartial.hbs" sound=sound playback=false}}
-    {{/each}}
+        {{#each playlist.sounds as |sound|}}
+            {{> "modules/track-tracker/templates/soundPartial.hbs" sound=sound playback=false}}
+        {{/each}}
     </ol>
 </li>
 {{/inline}}
 
-<section class="tab sidebar-tab directory flexcol" id="playlists" data-tab="playlists">
+{{#*inline "playingPartial"}}
+{{#if showPlaying}}
+    <div id="currently-playing" class="global-control flexrow {{currentlyPlaying.class}}">
+        <header class="playlist-header flexrow">
+            <h4>{{localize "PLAYLIST.CurrentlyPlaying"}}</h4>
+            <a class="pin" title="{{localize currentlyPlaying.pin.label}}">
+                <i class="fas fa-caret-{{currentlyPlaying.pin.caret}}"></i>
+            </a>
+        </header>
+        <ol class="playlist-sounds">
+            {{#each playingSounds as |sound|}}
+                {{> "modules/track-tracker/templates/soundPartial.hbs" sound=sound playback=true}}
+            {{/each}}
+        </ol>
+    </div>
+{{/if}}
+{{/inline}}
+
+<section class="tab sidebar-tab directory flexcol" id="{{tabName}}" data-tab="{{tabName}}">
     <!-- Original file from Foundy, just replaced calls to inline partial "soundPartial" with calls to external partial "soundPartial.hbs" -->
     <!-- Directory Header -->
     <header class="directory-header">
         <div class="header-actions action-buttons flexrow">
             {{#if canCreate }}
-            <button class="create-entity"><i class="fas fa-music"></i> {{localize 'PLAYLIST.Create'}}</button>
+            <button class="create-document"><i class="fas fa-music"></i> {{localize 'SIDEBAR.Create' type=label}}</button>
             <button class="create-folder"><i class="fas fa-folder"></i> {{localize 'FOLDER.Create'}}</button>
             {{/if}}
         </div>
         <div class="header-search flexrow">
             <i class="fas fa-search"></i>
-            <input type="text" name="search" value="" placeholder="{{localize 'PLAYLIST.Search'}}" autocomplete="off"/>
+            <input type="text" name="search" value="" placeholder="{{localize 'SIDEBAR.Search' types=labelPlural }}" autocomplete="off"/>
             <a class="header-control collapse-all" title="{{localize 'FOLDER.Collapse'}}"><i class="fas fa-sort-amount-up fa-fw"></i></a>
         </div>
     </header>
@@ -140,28 +159,23 @@
         </ol>
     </div>
 
-    {{#if showPlaying}}
-    <div id="currently-playing" class="global-control flexrow">
-        <header class="playlist-header flexrow">
-            <h4>{{localize "PLAYLIST.CurrentlyPlaying"}}</h4>
-        </header>
-        <ol class="playlist-sounds">
-            {{#each playingSounds as |sound|}}
-                {{> "modules/track-tracker/templates/soundPartial.hbs" sound=sound playback=true}}
-            {{/each}}
-        </ol>
-    </div>
+    {{#if currentlyPlaying.location.top}}
+        {{> playingPartial}}
     {{/if}}
 
     <!-- Directories List -->
 	<ol class="directory-list">
 	    {{~#each tree.children as |f fi|}}
-        {{> folderPartial folder=f}}
+            {{> folderPartial folder=f}}
 	    {{/each}}
-	    {{#each tree.playlists}}
-        {{> playlistPartial playlist=this}}
+	    {{#each tree.content}}
+            {{> playlistPartial playlist=this}}
 	    {{/each~}}
 	</ol>
+
+    {{#if currentlyPlaying.location.bottom}}
+        {{> playingPartial}}
+    {{/if}}
 
 	<!-- Directory Footer -->
 	<footer class="directory-footer"></footer>
