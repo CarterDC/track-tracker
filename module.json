@@ -4,7 +4,7 @@
   "description": "Adds a Tracker to the 'now playing' Track.",
   "version": "0.4.5",
   "minimumCoreVersion" : "0.8.6",
-  "compatibleCoreVersion" : "0.8.8",
+  "compatibleCoreVersion" : "9",
   "author": "Carter_DC",
   "authors": [
     {
